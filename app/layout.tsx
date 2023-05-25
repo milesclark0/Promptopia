@@ -1,23 +1,28 @@
-import "bootstrap/dist/css/bootstrap.css"
-import ProvidersWrapper from './ProvidersWrapper'
+import { ReactNode } from "react";
+import "@styles/globals.css";
+import Nav from "@components/Nav";
+import Provider from "@components/Provider";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export const metadata = {
+  title: "Promtopia",
+  description: "Discover and Share Ai Prompts",
+};
+
+const RootLayout = ({ children }: { children: ReactNode }) => {
   return (
     <html lang="en">
-      {/*
-        <head /> will contain the components returned by the nearest parent
-        head.tsx. Find out more at https://beta.nextjs.org/docs/api-reference/file-conventions/head
-      */}
-      <head />
       <body>
-        <ProvidersWrapper>
+        <Provider>
+        <div className="main">
+          <div className="gradient" />
+        </div>
+        <main className="app">
+          <Nav />
           {children}
-        </ProvidersWrapper>
+          </main>
+        </Provider>
       </body>
     </html>
-  )
-}
+  );
+};
+export default RootLayout;
