@@ -7,7 +7,6 @@ import User from "@models/user";
 import { log } from "console";
 import { connect } from "mongoose";
 
-//for some reason next-auth only works in pages directory, so this will be the only file in pages/
 
 const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, JWT_SECRET, GITHUB_ID, GITHUB_SECRET } = process.env;
 if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !JWT_SECRET || !GITHUB_ID || !GITHUB_SECRET) {
@@ -50,11 +49,11 @@ const handler: NextAuthOptions = {
                     return null;
                 }
                 // check if password is correct
-                console.log("here")
+                console.log(foundUser.comparePassword)
                 try {
-                    await foundUser.comparePassword(password, (err: Error, isMatch: boolean) => {
+                    foundUser.comparePassword(password, (err: Error, isMatch: boolean) => {
                         if (err) {
-                            console.log(err.message)
+                            console.log(err.message, "there was an error")
                             return null;
                         }
                         if (!isMatch) {
@@ -62,6 +61,7 @@ const handler: NextAuthOptions = {
                             return null;
                         }
                     });
+                    console.log("done")
                 }
                 catch (err) {
                     console.log( "err")
@@ -101,20 +101,21 @@ const handler: NextAuthOptions = {
             session.user.id = sessionUser?._id.toString();
             return session;
         },
-        async signIn({ profile, user }) {
+        async signIn({ user }) {
             try {
                 await connectToDatabase();
                 // if user does not exist, create new user
-                const userExists = await User.findOne({ email: profile?.email});
-                //TODO: add cases for other providers bc the field names are different
-                if (!userExists && !user) {
-                    console.log("creating new user")
+                const userExists = await User.findOne({ email: user?.email});
+                if (!userExists) {
                     await User.create({
-                        email: profile?.email,
-                        username: profile?.name?.replace(" ", "").toLowerCase(),
+                        email: user?.email,
+                        username: user?.name?.replace(" ", "").toLowerCase(),
                         // @ts-ignore
-                        image: profile?.picture
+                        image: user?.image,
                     });
+                    console.log("New user created")
+                } else {
+                    console.log("Account Found")
                 }
                 return true;
             } catch (error) {

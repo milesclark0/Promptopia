@@ -1,15 +1,32 @@
 "use client"
-import { signIn } from "next-auth/react";
-import { redirect } from "next/dist/server/api-utils";
-import React, {MouseEventHandler } from "react";
+import Divider from "@components/Divider";
+import { BuiltInProviderType } from "next-auth/providers";
+import { ClientSafeProvider, LiteralUnion, getProviders, signIn } from "next-auth/react";
+import Image from "next/image";
+import React, {MouseEventHandler, useEffect, useState } from "react";
+import {signInCallbackUrl} from "@globals/constants"
 
 const SignInPage = () => {
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
-
-  const handleSignIn: MouseEventHandler<HTMLButtonElement> = async (e) => {
+  
+  const [providers, setProviders] = useState<Record<LiteralUnion<BuiltInProviderType, string>, ClientSafeProvider> | null>(null);
+  useEffect(() => {
+    const configureProviders = async () => {
+      const response = await getProviders();
+      setProviders(response);
+    };
+    configureProviders();
+  }, []);
+  
+  const handleSignIn = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, providerId?: string) => {
     e.preventDefault();
-    const res = await signIn("credentials", { username, password, redirect: false}, );
+    let res = null;
+    if (!providerId) {
+      res = await signIn("credentials", { username, password, callbackUrl: signInCallbackUrl });
+    } else {
+      res = await signIn(providerId, { callbackUrl: signInCallbackUrl });
+    }
     console.log(res)
   }
 
@@ -46,7 +63,21 @@ const SignInPage = () => {
             Forget Password?
           </a>
           <div className="mt-6">
-            <button className="px-5 py-1.5 text-sm bg-primary-orange rounded-full text-white w-full" onClick={handleSignIn}>Sign in</button>
+            <button type="button" className="px-5 py-1.5 text-sm bg-primary-orange rounded-full text-white w-full" onClick={(e) => handleSignIn(e)}>Sign in</button>
+            <Divider text="OR" />
+            <div className="flex items-center justify-center">
+            {Object.values(providers || {} ).filter((provider) => provider.name !== "Credentials").map((provider) => (
+              <button
+                key={provider.name}
+                type="button"
+                className="px-2"
+                title={`Sign in with ${provider.name}`}
+                onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => handleSignIn(e, provider.id)}
+              >
+                <Image src={`/assets/icons/${provider.id}.svg`} alt={provider.name} width={30} height={30} className="object-contain" />
+              </button>
+            ))}
+            </div>
           </div>
         </form>
         <section>

@@ -1,0 +1,1 @@
+export const signInCallbackUrl = 'http://localhost:3000/'

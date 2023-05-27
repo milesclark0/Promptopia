@@ -1,6 +1,6 @@
 import {Model, Schema, model, models} from 'mongoose';
 import { unique } from 'next/dist/build/utils';
-import { User } from '@globalTypes/types';
+import { User } from '@globals/types';
 
 const bcrypt = require('bcrypt');
 const SALT_WORK_FACTOR = 10;

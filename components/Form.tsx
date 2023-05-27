@@ -1,4 +1,4 @@
-import { type Post } from "@globalTypes/types";
+import { type Post } from "@globals/types";
 import Link from "next/link";
 
 interface FormProps {

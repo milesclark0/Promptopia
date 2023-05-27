@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Post, EmptyPostObj } from "@globalTypes/types";
+import { Post, EmptyPostObj } from "@globals/types";
 
 import Form from "@components/Form";
 
