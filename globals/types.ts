@@ -33,6 +33,7 @@ type User = {
     _id: string;
     email: string;
     username: string;
+    name?: string;
     image: string;
     password: string;
     posts: string[];
@@ -47,6 +48,7 @@ const EmptyUserObj: User = {
     password: "",
     posts: [],
     likes: [],
+    name: "",
 }
 
 

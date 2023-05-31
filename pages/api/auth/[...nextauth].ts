@@ -6,6 +6,8 @@ import { connectToDatabase } from "@utils/database";
 import User from "@models/user";
 import { log } from "console";
 import { connect } from "mongoose";
+import { SessionUser } from "@globals/types";
+import { rejects } from "assert";
 
 
 const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, JWT_SECRET, GITHUB_ID, GITHUB_SECRET } = process.env;
@@ -31,6 +33,26 @@ const validateEmail = (email: string | undefined) => {
         );
 };
 
+const comparePasswordAsync = (foundUser: any, password:string) => {
+    return new Promise<SessionUser>((resolve, reject) => {
+        foundUser.comparePassword(password, function (err: Error, isMatch: boolean) {
+            if (err) {
+                reject("Error comparing password")
+            }
+            if (!isMatch) {
+                reject("Password does not match")
+            } else {
+                resolve({
+                    id: foundUser._id.toString(),
+                    email: foundUser.email,
+                    username: foundUser.username,
+                    image: foundUser.image,
+                });
+            }
+        });
+    })
+}
+
 const handler: NextAuthOptions = {
     providers: [
         CredentialsProvider({
@@ -38,42 +60,25 @@ const handler: NextAuthOptions = {
             credentials: {},
             async authorize(credentials, req) {
                 const { password, username } = credentials as { password: string, username: string };
-                console.log({username, password})
+                console.log({ username, password })
                 //preform login logic
                 await connectToDatabase();
-                let foundUser = null;
+                let foundUser: any = null;
                 //if validate email passes, then we know that the user is logging in with email (username === email)
                 foundUser = validateEmail(username) ? await User.findOne({ email: username }) : await User.findOne({ username: username });
                 if (!foundUser) {
-                    console.log("User not found")
-                    return null;
+                    throw new Error("User not found");
                 }
                 // check if password is correct
-                console.log(foundUser.comparePassword)
                 try {
-                    foundUser.comparePassword(password, (err: Error, isMatch: boolean) => {
-                        if (err) {
-                            console.log(err.message, "there was an error")
-                            return null;
-                        }
-                        if (!isMatch) {
-                            console.log("Password does not match")
-                            return null;
-                        }
-                    });
-                    console.log("done")
-                }
-                catch (err) {
-                    console.log( "err")
+                    const val = await comparePasswordAsync(foundUser, password);
+                    return val;
+                } catch (error) {
+                    if (typeof(error) === "string") {
+                        throw new Error(error);
+                    }
                     return null;
                 }
-                console.log(foundUser)
-                return {
-                    id: foundUser._id.toString(),
-                    email: foundUser.email,
-                    name: foundUser.username,
-                    image: foundUser.image,
-                };
             }
         }),
         GoogleProvider({
@@ -101,15 +106,17 @@ const handler: NextAuthOptions = {
             session.user.id = sessionUser?._id.toString();
             return session;
         },
-        async signIn({ user }) {
+        async signIn({ user, profile, }) {
+            console.log("user:", user)
+            console.log("profile:", profile)
             try {
                 await connectToDatabase();
                 // if user does not exist, create new user
-                const userExists = await User.findOne({ email: user?.email});
+                const userExists = await User.findOne({ email: user?.email });
                 if (!userExists) {
                     await User.create({
                         email: user?.email,
-                        username: user?.name?.replace(" ", "").toLowerCase(),
+                        username: user?.email,
                         // @ts-ignore
                         image: user?.image,
                     });
@@ -119,6 +126,7 @@ const handler: NextAuthOptions = {
                 }
                 return true;
             } catch (error) {
+                console.log(error)
                 return false;
             }
         },

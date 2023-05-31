@@ -1,15 +1,19 @@
-"use client"
+"use client";
 import Divider from "@components/Divider";
 import { BuiltInProviderType } from "next-auth/providers";
 import { ClientSafeProvider, LiteralUnion, getProviders, signIn } from "next-auth/react";
 import Image from "next/image";
-import React, {MouseEventHandler, useEffect, useState } from "react";
-import {signInCallbackUrl} from "@globals/constants"
+import React, { MouseEventHandler, useEffect, useState } from "react";
+import { signInCallbackUrl } from "@globals/constants";
+import { useRouter } from "next/navigation";
+import ErrorBadge from "@components/ErrorBadge";
 
 const SignInPage = () => {
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
-  
+  const [signInError, setSignInError] = React.useState("");
+  const router = useRouter();
+
   const [providers, setProviders] = useState<Record<LiteralUnion<BuiltInProviderType, string>, ClientSafeProvider> | null>(null);
   useEffect(() => {
     const configureProviders = async () => {
@@ -18,19 +22,24 @@ const SignInPage = () => {
     };
     configureProviders();
   }, []);
-  
+
   const handleSignIn = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, providerId?: string) => {
     e.preventDefault();
     let res = null;
     if (!providerId) {
-      res = await signIn("credentials", { username, password, callbackUrl: signInCallbackUrl });
+      res = await signIn("credentials", { username, password, redirect: false });
     } else {
-      res = await signIn(providerId, { callbackUrl: signInCallbackUrl });
+      res = await signIn(providerId, { redirect: false });
     }
-    console.log(res)
-  }
-
-
+console.log(res)
+    if (!res) return;
+    if (!res.error) {
+      //navigate to homepage
+      router.push(signInCallbackUrl);
+    } else {
+      setSignInError(res.error);
+    }
+  };
 
   return (
     <div className="relative flex flex-col justify-center overflow-hidden w-1/2">
@@ -54,7 +63,7 @@ const SignInPage = () => {
             </label>
             <input
               type="password"
-             value={password}
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="block w-full px-4 py-2 mt-2 bg-white border rounded-md focus:border-orange-400 focus:ring-orange-300 focus:outline-none focus:ring focus:ring-opacity-40"
             />
@@ -62,29 +71,38 @@ const SignInPage = () => {
           <a href="#" className="text-xs text-orange-600 hover:underline">
             Forget Password?
           </a>
+          <ErrorBadge title="Sign In Error" show={signInError !== ""} onClose={() => setSignInError("")}>
+            {signInError}
+          </ErrorBadge>
           <div className="mt-6">
-            <button type="button" className="px-5 py-1.5 text-sm bg-primary-orange rounded-full text-white w-full" onClick={(e) => handleSignIn(e)}>Sign in</button>
+            <button type="button" className="px-5 py-1.5 text-sm bg-primary-orange rounded-full text-white w-full" onClick={(e) => handleSignIn(e)}>
+              Sign in
+            </button>
             <Divider text="OR" />
             <div className="flex items-center justify-center">
-            {Object.values(providers || {} ).filter((provider) => provider.name !== "Credentials").map((provider) => (
-              <button
-                key={provider.name}
-                type="button"
-                className="px-2"
-                title={`Sign in with ${provider.name}`}
-                onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => handleSignIn(e, provider.id)}
-              >
-                <Image src={`/assets/icons/${provider.id}.svg`} alt={provider.name} width={30} height={30} className="object-contain" />
-              </button>
-            ))}
+              {Object.values(providers || {})
+                .filter((provider) => provider.name !== "Credentials")
+                .map((provider) => (
+                  <button
+                    key={provider.name}
+                    type="button"
+                    className="px-2"
+                    title={`Sign in with ${provider.name}`}
+                    onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => handleSignIn(e, provider.id)}
+                  >
+                    <Image src={`/assets/icons/${provider.id}.svg`} alt={provider.name} width={30} height={30} className="object-contain" />
+                  </button>
+                ))}
             </div>
           </div>
         </form>
         <section>
-          <p className="mt-8 text-xs font-light text-center text-gray-700 hover:underline"><a href="/terms">Terms and Conditions</a></p>
+          <p className="mt-8 text-xs font-light text-center text-gray-700 hover:underline">
+            <a href="/terms">Terms and Conditions</a>
+          </p>
           <p className="mt-2 text-xs font-light text-center text-gray-700">
             Don't have an account?{" "}
-            <a href="#" className="font-medium text-orange-600 hover:underline">
+            <a href="/auth/signup" className="font-medium text-orange-600 hover:underline">
               Sign up
             </a>
           </p>

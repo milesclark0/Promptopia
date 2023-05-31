@@ -1,4 +1,4 @@
-import {Model, Schema, model, models} from 'mongoose';
+import { Model, Schema, model, models } from 'mongoose';
 import { unique } from 'next/dist/build/utils';
 import { User } from '@globals/types';
 
@@ -17,11 +17,12 @@ const UserSchema = new Schema<User, UserModel, UserMethods>({
         type: String,
         unique: true,
         required: [true, 'Email is required'],
+        match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Email invalid, it should be a valid email address!"],
     },
     username: {
         type: String,
         required: [true, 'Username is required'],
-        match: [/^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/, "Username invalid, it should contain 8-20 alphanumeric letters and be unique!"],
+        match: [/^(?=.{3,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/, "Username invalid, it should contain 3-20 alphanumeric letters and be unique!"],
         unique: true,
     },
     image: {
@@ -31,6 +32,21 @@ const UserSchema = new Schema<User, UserModel, UserMethods>({
         type: String,
         match: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, "Password invalid, it should contain at least 8 characters, one uppercase letter, one lowercase letter and one number!"],
     },
+    posts: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Prompt',
+    }],
+    likes: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Prompt',
+    }],
+    name: {
+        type: String,
+        match: [/^[a-zA-Z\s]+$/, "Name is invalid, it should contain only letters!"],
+    },
+}, {
+    timestamps: true,
+
 });
 
 UserSchema.pre('save', function (next) {
