@@ -29,9 +29,8 @@ const SignInPage = () => {
     if (!providerId) {
       res = await signIn("credentials", { username, password, redirect: false });
     } else {
-      res = await signIn(providerId, { redirect: false });
+      res = await signIn(providerId, { callbackUrl: signInCallbackUrl });
     }
-console.log(res)
     if (!res) return;
     if (!res.error) {
       //navigate to homepage

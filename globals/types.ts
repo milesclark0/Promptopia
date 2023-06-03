@@ -1,10 +1,11 @@
 type Post = {
     _id: string;
-    creator: string;
+    creator: string | User;
     prompt: string;
-    tags: string[];
+    tags: string[] | string;
     userId: string;
     likes: string[];
+    createdAt: string;
 }
 const EmptyPostObj: Post = {
     _id: "",
@@ -13,6 +14,7 @@ const EmptyPostObj: Post = {
     tags: [],
     userId: "",
     likes: [],
+    createdAt: "",
 }
 
 type SessionUser = {

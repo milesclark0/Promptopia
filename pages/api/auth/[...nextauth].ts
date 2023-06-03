@@ -40,7 +40,7 @@ const comparePasswordAsync = (foundUser: any, password:string) => {
                 reject("Error comparing password")
             }
             if (!isMatch) {
-                reject("Password does not match")
+                reject("Incorrect password")
             } else {
                 resolve({
                     id: foundUser._id.toString(),

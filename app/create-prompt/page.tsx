@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Post, EmptyPostObj } from "@globals/types";
+import { parseTags } from "@utils/parse";
 
 import Form from "@components/Form";
 
@@ -12,6 +13,7 @@ const CreatePromptPage = () => {
   
   const {data: session} = useSession();
   const router = useRouter();
+
 
   const createPrompt = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -25,7 +27,7 @@ const CreatePromptPage = () => {
         method: "POST",
         body: JSON.stringify({
           prompt: post.prompt,
-          tags: post.tags,
+          tags: typeof post.tags === "string" ? parseTags(post.tags) : post.tags,
           userId: session.user.id
         })
       })

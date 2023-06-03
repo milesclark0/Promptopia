@@ -9,13 +9,6 @@ interface FormProps {
   handleSubmit: (event: React.SyntheticEvent) => Promise<void>;
 }
 
-const parseTags = (tags: string) => {
-  //remove all whitespace and split by #
-  let parsedTags = tags.replace(/\s/g, "").split("#");
-  //remove empty strings, and prepend # to each tag
-  parsedTags = parsedTags.filter((tag) => tag !== "").map((tag) => `#${tag}`);
-  return parsedTags;
-};
 
 const Form = ({ type, post, setPost, submitting, handleSubmit }: FormProps) => {
   return (
@@ -41,7 +34,8 @@ const Form = ({ type, post, setPost, submitting, handleSubmit }: FormProps) => {
           <span className="font-satoshi font-semibold text-base text-gray-700">Tags </span>
           <span className="font-normal">(#idea #developer #react)</span>{" "}
           <input
-            onChange={(event) => setPost({ ...post, tags: parseTags(event.target.value) })}
+            value={post.tags}
+            onChange={(event) => setPost({ ...post, tags: event.target.value })}
             placeholder="#tags"
             required
             className="form_input"
@@ -52,7 +46,7 @@ const Form = ({ type, post, setPost, submitting, handleSubmit }: FormProps) => {
             Cancel
           </Link>
           <button disabled={submitting} type="submit" className="px-5 py-1.5 text-sm bg-primary-orange rounded-full text-white">
-            {submitting ? `${type}ing...` : type} Post
+            {submitting ? `${type}ing...` : type}
           </button>
         </div>
       </form>
