@@ -12,6 +12,7 @@ import {
 } from "next-auth/react";
 import { BuiltInProviderType } from "next-auth/providers";
 import SessionLoadWrapper from "./SessionLoadWrapper";
+import ProfileIcon from "./ProfileIcon";
 
 const Nav = () => {
   const [toggleDropdown, setToggledDropdown] = useState(false);
@@ -61,15 +62,7 @@ const Nav = () => {
             >
               Sign Out
             </button>
-            <Link href="profile">
-              <Image
-                src={session?.user.image || ""}
-                width={37}
-                height={37}
-                alt="Profile"
-                className="rounded-full"
-              />
-            </Link>
+            <ProfileIcon />
           </div>
         ) : (
           <>
@@ -87,7 +80,7 @@ const Nav = () => {
         {session?.user ? (
           <div className="flex">
             <Image
-              src={session?.user.image || ""}
+              src={session?.user.image || "/assets/icons/profile.svg"}
               width={37}
               height={37}
               alt="Profile"

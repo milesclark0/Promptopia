@@ -20,6 +20,11 @@ const Profile = ({ name, desc, data, handleEdit, handleDelete }: ProfileProps) =
         {data.map((post: Post) => (
           <PromptCard key={post._id} post={post} handleEdit={() => handleEdit(post)} handleDelete={() => handleDelete(post)} />
         ))}
+        {data.length === 0 && (
+          <div className="flex-start flex-col gap-5">
+            <p className="font-inter text-sm text-gray-500">You have not created any prompts yet.</p>
+          </div>
+        )}
       </div>
     </section>
   );
